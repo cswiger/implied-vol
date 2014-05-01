@@ -121,7 +121,7 @@ def getstrike(x):
 
 
 def main(QuoteData):
-    global today
+    global today, year
 
     if(a00acc() != 1):
 	print "Cannot find a valid NAG license"
