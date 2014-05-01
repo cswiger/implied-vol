@@ -310,7 +310,11 @@ def main(QuoteData):
     
     #Call the NAG Chebyshev fitting function
     e02cac(mx,n,k,l,xx,yx,callx,weightx,output_coef,xminx,xmaxx,nuxx,inux,nuyx,inuy,fail)        
-   
+  
+    if (fail.code == 279):    # try again with smaller axis degree
+        k = 2
+        l = 2 
+        e02cac(mx,n,k,l,xx,yx,callx,weightx,output_coef,xminx,xmaxx,nuxx,inux,nuyx,inuy,fail)
     if(fail.code != 0):
         print fail.message
 	return 0
