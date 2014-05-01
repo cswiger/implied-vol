@@ -7,8 +7,7 @@ Data needs to be downloaded from:
 http://www.cboe.com/delayedquote/QuoteTableDownload.aspx
 """
 
-import os, sys
-import datetime, re
+import os, sys, re
 import pandas
 import numpy
 import matplotlib.pylab as plt
@@ -43,10 +42,8 @@ cumulative_month_2 = {1 : 0, 2 : 31, 3 : 57,
 call_months = "ABCDEFGHIJKL"
 put_months = "MNOPQRSTUVWX"
 symbol = re.compile("\\([A-Z0-9]{1,5}(1[0-9])([0-9]{2})([A-Z])([0-9]{1,4})")
-now = datetime.datetime.now()
-year = now.year - 2000
 today = 0
-
+year = 14
 
 def callback(x, comm):
     """
@@ -113,9 +110,10 @@ def getexpiration(x):
     except ValueError:
         month = put_months.index(tokens[3]) + 1
     exp = (int(tokens[1]) - year) * 365 + cumulative_month_2[month] - today + int(tokens[2])
-    if exp not in dates:
-        dates.append(exp)
-    return exp
+    if (exp > 0):
+        if exp not in dates:
+            dates.append(exp)
+        return exp
 
 def getstrike(x):
     monthday = x.split()
@@ -146,6 +144,7 @@ def main(QuoteData):
     company = first[0]
     underlyingprice = float(first[1])
     month, day = second[:2]
+    year = int(second[2]) - 2000
     today = cumulative_month[month] + int(day) 
 
     data = pandas.io.parsers.read_csv(QuoteData, sep=',', header=2, na_values=' ')
@@ -230,6 +229,8 @@ def main(QuoteData):
 	if ((num == 331) | (num == 334) | (num == 337)):
            myfig.set_ylabel('Implied Volatility')
         num += 1
+	if (num > 339):
+           break
 
     plt.suptitle('Implied Volatility for %s Current Price: %s\n Date: %s' %
                  (company, underlyingprice, qd_date))
@@ -363,7 +364,7 @@ def main(QuoteData):
     ax.set_xlabel('Strike Price')
     ax.set_ylabel('Days to Expiration')
     ax.set_zlabel('Implied Volatility for Put Options')
-    plt.suptitle('Implied Volatility Surface for %s Current Price: %s Date: %s' %
+    plt.suptitle('Implied Volatility Surface for %s\n Current Price: %s Date: %s' %
                  (company, underlyingprice, qd_date))
     
     plt.show()    
