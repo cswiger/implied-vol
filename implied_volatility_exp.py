@@ -121,6 +121,7 @@ def getstrike(x):
 
 
 def main(QuoteData):
+    global today
 
     if(a00acc() != 1):
 	print "Cannot find a valid NAG license"
@@ -205,7 +206,7 @@ def main(QuoteData):
     # in case of too many charts, limit to 9 
     if (len(dates) > 9):
        print len(dates)
-
+ 
     for date in dates:
         # add each subplot to the figure
         plot_call = data[(data.impvolCall > .01) &
