@@ -26,6 +26,27 @@ __author__ = "John Morrissey and Brian Spector"
 __copyright__ = "Copyright 2013, The Numerical Algorithms Group Inc"
 __email__ = "support@nag.co.uk"
 
+# globals
+# Set to hold expiration dates
+dates = []
+
+cumulative_month = {'Jan': 0, 'Feb': 31, 'Mar': 57,
+                    'Apr': 90, 'May': 120, 'Jun': 151,
+                    'Jul': 181, 'Aug': 212, 'Sep': 243,
+                    'Oct': 273, 'Nov': 304, 'Dec': 334}
+
+cumulative_month_2 = {1 : 0, 2 : 31, 3 : 57,
+                    4 : 90, 5 : 120, 6 : 151,
+                    7 : 181, 8 : 212, 9 : 243,
+                    10 : 273, 11 : 304, 12 : 334}
+
+call_months = "ABCDEFGHIJKL"
+put_months = "MNOPQRSTUVWX"
+symbol = re.compile("\\([A-Z0-9]{1,5}(1[0-9])([0-9]{2})([A-Z])([0-9]{1,4})")
+now = datetime.datetime.now()
+year = now.year - 2000
+today = 0
+
 
 def callback(x, comm):
     """
@@ -85,33 +106,13 @@ def calcvol(exp, strike, todays_date, underlying, current_price, callput):
     else:
         return 0.0
 
-# Set to hold expiration dates
-dates = []
-
-cumulative_month = {'Jan': 31, 'Feb': 57, 'Mar': 90,
-                    'Apr': 120, 'May': 151, 'Jun': 181,
-                    'Jul': 212, 'Aug': 243, 'Sep': 273,
-                    'Oct': 304, 'Nov': 334, 'Dec': 365}
-
-cumulative_month_2 = {1 : 0, 2 : 31, 3 : 57,
-                    4 : 90, 5 : 120, 6 : 151,
-                    7 : 181, 8 : 212, 9 : 243,
-                    10 : 273, 11 : 304, 12 : 334}
-
-call_months = "ABCDEFGHIJKL"
-put_months = "MNOPQRSTUVWX"
-symbol = re.compile("\\([A-Z0-9]{1,5}(1[0-9])([0-9]{2})([A-Z])([0-9]{1,4})")
-now = datetime.datetime.now()
-year = now.year - 2000
-doy = now.timetuple().tm_yday
-
 def getexpiration(x):
     tokens = symbol.split(x)
     try:
         month = call_months.index(tokens[3]) + 1
     except ValueError:
         month = put_months.index(tokens[3]) + 1
-    exp = (int(tokens[1]) - year) * 365 + cumulative_month_2[month] - doy + int(tokens[2])
+    exp = (int(tokens[1]) - year) * 365 + cumulative_month_2[month] - today + int(tokens[2])
     if exp not in dates:
         dates.append(exp)
     return exp
@@ -145,7 +146,7 @@ def main(QuoteData):
     company = first[0]
     underlyingprice = float(first[1])
     month, day = second[:2]
-    today = cumulative_month[month] + int(day) - 30
+    today = cumulative_month[month] + int(day) 
 
     data = pandas.io.parsers.read_csv(QuoteData, sep=',', header=2, na_values=' ')
 
@@ -195,13 +196,17 @@ def main(QuoteData):
 
     data = data.join(impvolput)
     fig = plt.figure(1)
-    fig.subplots_adjust(hspace=.4, wspace=.3)
+    fig.subplots_adjust(hspace=.8, wspace=.4, top=.85)
 
     # Plot the Volatility Curves
     # Encode graph layout: 3 rows, 3 columns, 1 is first graph.
     num = 331
     max_xticks = 4
-    
+   
+    # in case of too many charts, limit to 9 
+    if (len(dates) > 9):
+       print len(dates)
+
     for date in dates:
         # add each subplot to the figure
         plot_call = data[(data.impvolCall > .01) &
@@ -222,10 +227,11 @@ def main(QuoteData):
         myfig.legend(loc=1, numpoints=1, prop={'size': 10})
         myfig.set_ylim([0,1])
         myfig.set_xlabel('Strike Price')
-        myfig.set_ylabel('Implied Volatility')
+	if ((num == 331) | (num == 334) | (num == 337)):
+           myfig.set_ylabel('Implied Volatility')
         num += 1
 
-    plt.suptitle('Implied Volatility for %s Current Price: %s Date: %s' %
+    plt.suptitle('Implied Volatility for %s Current Price: %s\n Date: %s' %
                  (company, underlyingprice, qd_date))
     
 
