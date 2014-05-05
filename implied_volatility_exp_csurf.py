@@ -258,9 +258,9 @@ def main(QuoteData):
 
     for date in dates:
 	call_data = data[(data.Expiration == date) & 
-				(data.impvolPut > .01) & 
-				(data.impvolPut < 1) &
-                                (data['Last Sale.1'] > 0)]
+				(data.impvolCall > .01) & 
+				(data.impvolCall < 1) &
+                                (data['Last Sale'] > 0)]
          
 	exp_sizes = call_data.Expiration.size
         if(exp_sizes > 0):       
@@ -269,13 +269,13 @@ def main(QuoteData):
 
         	if(i == 0):
             		x = call_data.Strike
-            		call = call_data.impvolPut
+            		call = call_data.impvolCall
             		xmin[0] = x.min()
             		xmax[0] = x.max()
         	else:
             		x2 = call_data.Strike
             		x = x.append(x2)
-            		call2 = call_data.impvolPut
+            		call2 = call_data.impvolCall
             		call = call.append(call2)
             		xmin[i] = x2.min()
             		xmax[i] = x2.max()
@@ -370,7 +370,7 @@ def main(QuoteData):
     ax.plot_trisurf(xaxis, yaxis, zaxis, cmap=cm.jet)
     ax.set_xlabel('Strike Price')
     ax.set_ylabel('Days to Expiration')
-    ax.set_zlabel('Implied Volatility for Put Options')
+    ax.set_zlabel('Implied Volatility for Call Options')
     plt.suptitle('Implied Volatility Surface for %s\n Current Price: %s Date: %s' %
                  (company, underlyingprice, qd_date))
     
