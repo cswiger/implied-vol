@@ -63,6 +63,8 @@ def callback(x, comm):
     out = c_double(0.0)
   
     # NAG function call 
+    # Update input with risk free (r) and dividend (q) rate if any:
+    # (Nag_RowMajor, callput, 1, 1, strike, underlying, time, x, r, q, out, fail)
     s30aac(Nag_RowMajor, callput, 1, 1, strike, underlying, time, x, 0.0, 0.0, out, fail)
     if(fail.code == 0):
         return out.value - current_price
